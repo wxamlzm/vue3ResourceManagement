@@ -12,13 +12,24 @@ import {
   Space,
   Tag
 } from 'ant-design-vue'
-import type { Resource, QueryParams } from './types.ts'
+import type {
+  Resource,
+  QueryParams,
+  DialogFormData
+} from './types/ResourceType.ts'
 import type {
   TableColumnType,
   TableProps,
   TablePaginationConfig
 } from 'ant-design-vue'
+import ResourceEditDialog from './components/ResourceEditDialog.vue'
 import { h } from 'vue'
+const DEFAULT_FORM_DATA: DialogFormData = {
+  name: '',
+  email: '',
+  age: ''
+}
+
 // 表单实例引用
 const formRef = ref()
 // 编辑表单实例引用
@@ -39,12 +50,13 @@ const loading = ref(false)
 const total = ref(0)
 
 // 弹窗控制状态
-const modalVisible = ref(false)
+const dialogVisible = ref(false)
 const modalTitle = ref('')
 const modalLoading = ref(false)
+// 弹窗中的表单数据
+const currentEditData = ref<DialogFormData | null>(null)
 
 // 当前编辑的资源
-const currentResource = ref<Partial<Resource>>({})
 
 // 资源类型选项
 const resourceTypes = [
@@ -145,6 +157,8 @@ const fetchList = async () => {
     tableData.value = [
       {
         name: '资源1',
+        email: 'string',
+        age: 0,
         type: '类型1',
         status: 0,
         createTime: '2024-11-11',
@@ -152,6 +166,8 @@ const fetchList = async () => {
       },
       {
         name: '资源1',
+        email: 'string',
+        age: 0,
         type: '类型1',
         status: 1,
         createTime: '2024-11-11',
@@ -192,15 +208,15 @@ const handleTableChange: TableProps<any>['onChange'] = (
 // 新建资源
 const handleAdd = () => {
   modalTitle.value = '新建资源'
-  currentResource.value = {}
-  modalVisible.value = true
+  currentEditData.value = DEFAULT_FORM_DATA
+  dialogVisible.value = true
 }
 
 // 编辑资源
 const handleEdit = (record: Resource) => {
   modalTitle.value = '编辑资源'
-  currentResource.value = { ...record }
-  modalVisible.value = true
+  currentEditData.value = { ...record }
+  dialogVisible.value = true
 }
 
 // 删除资源
@@ -225,24 +241,26 @@ const handleDelete = async (record: Resource) => {
 }
 
 // 提交表单
-const handleSubmit = async () => {
+const handleDialogSubmit = async () => {
   try {
     await editFormRef.value?.validateFields()
     modalLoading.value = true
-
+    if (!currentEditData.value) {
+      return
+    }
     // TODO: 替换为实际的API调用
-    const url = currentResource.value.id
-      ? `/api/resources/${currentResource.value.id}`
+    const url = currentEditData.value
+      ? `/api/resources/${currentEditData.value}`
       : '/api/resources'
-    const method = currentResource.value.id ? 'PUT' : 'POST'
+    const method = currentEditData.value ? 'PUT' : 'POST'
 
     await fetch(url, {
       method,
-      body: JSON.stringify(currentResource.value)
+      body: JSON.stringify(currentEditData.value)
     })
 
     message.success(`${modalTitle.value}成功`)
-    modalVisible.value = false
+    dialogVisible.value = false
     fetchList()
   } catch (error) {
     message.error(`${modalTitle.value}失败`)
@@ -254,7 +272,7 @@ const handleSubmit = async () => {
 
 // 弹窗取消
 const handleCancel = () => {
-  modalVisible.value = false
+  dialogVisible.value = false
   editFormRef.value?.resetFields()
 }
 
@@ -353,64 +371,11 @@ onMounted(() => {
     </Card>
 
     <!-- 编辑弹窗 -->
-    <Modal
-      :title="modalTitle"
-      :visible="modalVisible"
-      :confirm-loading="modalLoading"
-      @ok="handleSubmit"
-      @cancel="handleCancel"
-    >
-      <Form ref="editFormRef" :model="currentResource" layout="vertical">
-        <Form.Item
-          name="name"
-          label="资源名称"
-          :rules="[{ required: true, message: '请输入资源名称' }]"
-        >
-          <Input
-            v-model:value="currentResource.name"
-            placeholder="请输入资源名称"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="type"
-          label="资源类型"
-          :rules="[{ required: true, message: '请选择资源类型' }]"
-        >
-          <Select
-            v-model:value="currentResource.type"
-            placeholder="请选择资源类型"
-          >
-            <Select.Option
-              v-for="item in resourceTypes"
-              :key="item.value"
-              :value="item.value"
-            >
-              {{ item.label }}
-            </Select.Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="status"
-          label="状态"
-          :rules="[{ required: true, message: '请选择状态' }]"
-        >
-          <Select
-            v-model:value="currentResource.status"
-            placeholder="请选择状态"
-          >
-            <Select.Option
-              v-for="item in statusOptions"
-              :key="item.value"
-              :value="item.value"
-            >
-              {{ item.label }}
-            </Select.Option>
-          </Select>
-        </Form.Item>
-      </Form>
-    </Modal>
+    <ResourceEditDialog
+      v-model:visible="dialogVisible"
+      :edit-data="currentEditData"
+      @submit="handleDialogSubmit"
+    />
   </div>
 </template>
 
