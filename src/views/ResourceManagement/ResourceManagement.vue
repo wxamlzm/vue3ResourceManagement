@@ -54,7 +54,7 @@ const dialogVisible = ref(false)
 const modalTitle = ref('')
 const modalLoading = ref(false)
 // 弹窗中的表单数据
-const currentEditData = ref<DialogFormData | null>(null)
+const currentEditData = reactive<DialogFormData>({} as DialogFormData)
 
 // 当前编辑的资源
 
@@ -208,14 +208,15 @@ const handleTableChange: TableProps<any>['onChange'] = (
 // 新建资源
 const handleAdd = () => {
   modalTitle.value = '新建资源'
-  currentEditData.value = DEFAULT_FORM_DATA
+  Object.assign(currentEditData, DEFAULT_FORM_DATA)
   dialogVisible.value = true
 }
 
 // 编辑资源
 const handleEdit = (record: Resource) => {
   modalTitle.value = '编辑资源'
-  currentEditData.value = { ...record }
+  Object.assign(currentEditData, record)
+  console.log(currentEditData)
   dialogVisible.value = true
 }
 
@@ -240,23 +241,20 @@ const handleDelete = async (record: Resource) => {
   })
 }
 
-// 提交表单
-const handleDialogSubmit = async () => {
+// 父组件中的相关代码
+const handleDialogSubmit = async (formData: DialogFormData) => {
   try {
-    await editFormRef.value?.validateFields()
     modalLoading.value = true
-    if (!currentEditData.value) {
-      return
-    }
+
     // TODO: 替换为实际的API调用
-    const url = currentEditData.value
-      ? `/api/resources/${currentEditData.value}`
+    const url = formData.age
+      ? `/api/resources/${formData.age}`
       : '/api/resources'
-    const method = currentEditData.value ? 'PUT' : 'POST'
+    const method = formData.age ? 'PUT' : 'POST'
 
     await fetch(url, {
       method,
-      body: JSON.stringify(currentEditData.value)
+      body: JSON.stringify(formData)
     })
 
     message.success(`${modalTitle.value}成功`)
@@ -374,6 +372,7 @@ onMounted(() => {
     <ResourceEditDialog
       v-model:visible="dialogVisible"
       :edit-data="currentEditData"
+      :loading="modalLoading"
       @submit="handleDialogSubmit"
     />
   </div>
