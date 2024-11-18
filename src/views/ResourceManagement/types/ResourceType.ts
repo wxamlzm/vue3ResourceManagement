@@ -32,3 +32,20 @@ export interface QueryParams {
   current: number
   [key: string]: any
 }
+
+export interface Developer {
+  key: string
+  developerId: string
+  permissions: string[]
+}
+
+export interface FormState {
+  groupId: string
+  projectName: string
+  gitlabIdentifier: string
+  status: boolean
+  createDevBranch: boolean
+  createMainBranch: boolean
+  developers: Developer[]
+  remarks: string
+}
