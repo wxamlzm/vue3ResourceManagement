@@ -69,10 +69,12 @@ const dialogTitle = computed(() => {
 
 // 监听编辑数据变化，同步到内部状态
 watch(
-  () => props.editData,
+  () => props.visible, // 所以最开始为什么不监听visible？
   newVal => {
-    // 使用解构赋值来更新formState
-    Object.assign(formState, { ...newVal })
+    if (newVal) {
+      // 使用解构赋值来更新formState
+      Object.assign(formState, { ...props.editData })
+    }
   },
   { deep: true, immediate: true }
 )
