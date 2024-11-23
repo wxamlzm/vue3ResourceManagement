@@ -15,6 +15,11 @@ const router = createRouter({
       component: () =>
         import("@/views/ResourceManagement/ResourceRequestDetail.vue"),
     },
+    {
+      path: "/ExpendSearchLine",
+      name: "ExpendSearchLine",
+      component: () => import("@/views/ExpendSearchLine/ExpendSearchLine.vue"),
+    },
   ],
 });
 
