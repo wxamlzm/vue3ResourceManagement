@@ -2,7 +2,6 @@
 <template>
   <a-modal
     :open="visible"
-    :title="dialogTitle"
     :confirm-loading="loading"
     @ok="handleSubmit"
     @cancel="handleCancel"
@@ -10,7 +9,6 @@
     <a-form
       ref="formRef"
       :model="formState"
-      :rules="rules"
       :label-col="{ span: 6 }"
       :wrapper-col="{ span: 16 }"
     >
@@ -28,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 import type { FormInstance } from 'ant-design-vue'
 import type { DialogFormData } from '../types/ResourceType'
 
@@ -44,46 +42,67 @@ const emit = defineEmits<{
 }>()
 
 const formRef = ref<FormInstance>()
+const isInitialized = ref(false)
 
-// 内部状态，用于表单数据管理
-const formState = reactive<DialogFormData>({
+// 定义初始值
+const initialFormState: DialogFormData = {
   name: '',
   email: '',
   age: 0
-})
-
-// 表单校验规则
-const rules = {
-  name: [{ required: true, message: '请输入姓名' }],
-  email: [
-    { required: true, message: '请输入邮箱' },
-    { type: 'email', message: '请输入正确的邮箱格式' }
-  ],
-  age: [{ required: true, message: '请输入年龄' }]
 }
 
-// 计算弹窗标题
-const dialogTitle = computed(() => {
-  return formState.age ? '编辑用户' : '新建用户'
-})
+// 内部状态，用于表单数据管理
+const formState = reactive<DialogFormData>({ ...initialFormState })
 
-// 监听编辑数据变化，同步到内部状态
+// 监听弹窗显示状态
 watch(
-  () => props.visible, // 所以最开始为什么不监听visible？
+  () => props.visible,
+  (newVal, oldVal) => {
+    if (newVal && !oldVal) {
+      // 仅在弹窗从关闭变为打开时执行
+      // 使用 nextTick 确保 DOM 更新后再初始化数据
+      nextTick(() => {
+        if (props.editData && Object.keys(props.editData).length > 0) {
+          Object.assign(formState, { ...props.editData })
+        } else {
+          Object.assign(formState, { ...initialFormState })
+        }
+        isInitialized.value = true
+      })
+    } else if (!newVal && oldVal) {
+      // 仅在弹窗从打开变为关闭时执行
+      // 延迟重置，等待弹窗动画完成
+      setTimeout(() => {
+        if (!props.visible) {
+          // 二次确认弹窗确实是关闭状态
+          formRef.value?.resetFields()
+          isInitialized.value = false
+        }
+      }, 300)
+    }
+  }
+)
+
+// 仅在编辑模式下同步外部数据变化
+watch(
+  () => props.editData,
   newVal => {
-    if (newVal) {
-      // 使用解构赋值来更新formState
-      Object.assign(formState, { ...props.editData })
+    if (
+      props.visible &&
+      isInitialized.value &&
+      newVal &&
+      Object.keys(newVal).length > 0
+    ) {
+      Object.assign(formState, { ...newVal })
     }
   },
-  { deep: true, immediate: true }
+  { deep: true }
 )
 
 // 提交表单
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
-    // 提交时创建一个新对象，避免传递响应式对象
     emit('submit', { ...formState })
   } catch (error) {
     console.error('表单验证失败:', error)
@@ -92,7 +111,6 @@ const handleSubmit = async () => {
 
 // 取消操作
 const handleCancel = () => {
-  formRef.value?.resetFields()
   emit('update:visible', false)
 }
 </script>
