@@ -20,6 +20,11 @@ const router = createRouter({
       name: "ExpendSearchLine",
       component: () => import("@/views/ExpendSearchLine/ExpendSearchLine.vue"),
     },
+    {
+      path: "/ApplyAdd",
+      name: "ApplyAdd",  // 多表单管理
+      component: () => import("@/views/ResourceApplication/ApplyAdd.vue"),
+    },
   ],
 });
 
