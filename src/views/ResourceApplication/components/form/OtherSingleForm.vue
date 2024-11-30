@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Form, Input } from 'ant-design-vue'
 
 const props = defineProps({

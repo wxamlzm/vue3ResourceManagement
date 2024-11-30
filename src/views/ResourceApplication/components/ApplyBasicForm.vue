@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Form, Input, Select, Option } from 'ant-design-vue'
 
 const props = defineProps({
