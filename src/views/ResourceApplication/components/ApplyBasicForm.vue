@@ -7,46 +7,82 @@
     <a-form-item label="姓名">
       <a-input v-model:value="localFormData.name" placeholder="请输入姓名" />
     </a-form-item>
+
     <a-form-item label="邮箱">
       <a-input v-model:value="localFormData.email" placeholder="请输入邮箱" />
     </a-form-item>
+
     <a-form-item label="申请类型">
-      <a-select
-        v-model:value="localFormData.applyType"
-        placeholder="请选择申请类型"
+      <a-checkbox-group
+        v-model:value="localFormData.applyTypes"
+        @change="handleApplyTypesChange"
       >
-        <a-select-option value="additionalResources">额外资源</a-select-option>
-        <a-select-option value="otherSingleForm">其他单表单</a-select-option>
-      </a-select>
+        <a-row>
+          <a-col v-for="type in availableApplyTypes" :key="type" :span="8">
+            <a-checkbox :value="type">
+              {{ getApplyTypeLabel(type) }}
+            </a-checkbox>
+          </a-col>
+        </a-row>
+      </a-checkbox-group>
     </a-form-item>
   </a-form>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
-import { Form, Input, Select, Option } from 'ant-design-vue'
+import { ref, watch, onMounted, computed } from 'vue'
 
-const props = defineProps({
-  formData: {
-    type: Object,
-    required: true
-  },
-  type: {
-    type: String,
-    required: true
-  }
-})
+// 定义一个灵活的数据接口
+interface ApplyFormData {
+  name?: string
+  email?: string
+  applyTypes?: string[]
+  [key: string]: unknown
+}
 
-const emit = defineEmits(['update:formData', 'typeChange'])
+const props = defineProps<{
+  formData: ApplyFormData
+  type: string
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:formData', value: ApplyFormData): void
+  (e: 'typeChange', value: string[]): void
+}>()
 
 // 本地数据
-const localFormData = ref({ ...props.formData })
+const localFormData = ref<ApplyFormData>({
+  ...props.formData,
+  applyTypes: props.formData.applyTypes || []
+})
+
+// 可用的申请类型
+const availableApplyTypes = computed(() => props.formData.applyTypes || [])
+
+// 获取申请类型的显示标签
+const getApplyTypeLabel = (type: string) => {
+  const labelMap: Record<string, string> = {
+    additionalResources: '额外资源',
+    otherSingleForm: '其他单表单',
+    // 可以根据需要添加更多映射
+    default: type
+  }
+  return labelMap[type] || labelMap.default
+}
+
+// 处理申请类型变化
+const handleApplyTypesChange = (checkedValues: string[]) => {
+  emit('typeChange', checkedValues)
+}
 
 // 监听 formData 的变化，并更新本地数据
 watch(
   () => props.formData,
   newVal => {
-    localFormData.value = { ...newVal }
+    localFormData.value = {
+      ...newVal,
+      applyTypes: newVal.applyTypes || []
+    }
   },
   { deep: true, immediate: true }
 )
@@ -60,16 +96,11 @@ watch(
   { deep: true }
 )
 
-// 监听 applyType 的变化，并通过事件通知父组件
-watch(
-  () => localFormData.value.applyType,
-  newVal => {
-    emit('typeChange', newVal)
-  }
-)
-
 // 初始化数据
 onMounted(() => {
-  localFormData.value = { ...props.formData }
+  localFormData.value = {
+    ...props.formData,
+    applyTypes: props.formData.applyTypes || []
+  }
 })
 </script>
