@@ -10,14 +10,15 @@ const router = createRouter({
         import("../views/ResourceManagement/ResourceManagement.vue"),
     },
     {
-      path: "/test",
-      name: "Test",
-      component: () => import("../views/Test.vue"),
+      path: "/ResourceRequestDetail",
+      name: "ResourceRequestDetail",
+      component: () =>
+        import("../views/ResourceManagement/ResourceManagement.vue"),
     },
     {
-      path: "/ApplicationForm",
-      name: "ApplicationForm",
-      component: () => import("@/views/ApplicationForm/ApplicationForm.vue"),
+      path: "/ApplyAdd",
+      name: "ApplyAdd",
+      component: () => import("../views/ResourceApplication/ApplyAdd.vue"),
     },
   ],
 });
