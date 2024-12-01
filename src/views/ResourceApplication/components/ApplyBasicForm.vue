@@ -42,7 +42,6 @@ interface ApplyFormData {
 
 const props = defineProps<{
   formData: ApplyFormData
-  type: string
 }>()
 
 const emit = defineEmits<{
