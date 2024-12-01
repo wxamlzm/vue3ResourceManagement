@@ -120,25 +120,49 @@ const columns: TableColumnType<Resource>[] = [
     fixed: 'right',
     width: 200,
     customRender: ({ record }) => {
-      return h(Space, null, () => [
+      const buttons = []
+
+      // 编辑按钮
+      buttons.push(
         h(
           Button,
-          {
-            type: 'link',
-            onClick: () => handleEdit(record)
-          },
+          { type: 'primary', onClick: () => console.log('编辑', record) },
           () => '编辑'
-        ),
+        )
+      )
+
+      // 启用/禁用按钮
+      const statusButtonText = record.status === 1 ? '禁用' : '启用'
+      const onStatusClick = () => {
+        if (record.status === 1) {
+          console.log('禁用', record)
+        } else {
+          console.log('启用', record)
+        }
+      }
+      buttons.push(
         h(
           Button,
-          {
-            type: 'link',
-            danger: true,
-            onClick: () => handleDelete(record)
-          },
-          () => '删除'
+          { type: 'default', onClick: onStatusClick },
+          () => statusButtonText
         )
+      )
+
+      // 删除按钮
+      const onDeleteClick = () => {
+        console.log('删除', record)
+      }
+      buttons.push(
+        h(Button, { type: 'danger', onClick: onDeleteClick }, () => '删除')
+      )
+
+      // 将按钮和竖线组合在一起
+      const buttonElements = buttons.flatMap((button, index) => [
+        button,
+        index < buttons.length - 1 ? h(Divider, { type: 'vertical' }) : null
       ])
+
+      return h(Space, {}, () => buttonElements)
     }
   }
 ]
