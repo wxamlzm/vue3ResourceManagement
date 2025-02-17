@@ -12,11 +12,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
+import { get } from 'lodash'
+
 interface ITableProps {
   fetchList: (params: any) => Promise<object>
   needLoading?: boolean
   rowKey?: string
+  queryParams: object
 }
 
 const props = withDefaults(defineProps<ITableProps>(), {
@@ -27,6 +30,7 @@ const emit = defineEmits<{ updateSelectedRowKeys }>()
 const tableLoading = ref(false)
 const tableDataSource = ref([])
 const selectedRowKeys = ref<(number | string)[]>([])
+const currentQueryParams = ref<object>({})
 
 const rowSelection = {
   checkStrictly: false,
@@ -43,4 +47,41 @@ const rowSelection = {
     emit('updateSelectedRowKeys', selectedRowKeys.value)
   }
 }
+
+// 列表分页
+const pageInfo = reactive({
+  pageSize: 10,
+  pageNum: 1,
+  total: 0
+})
+
+// 处理分页变化 - 自动触发查询
+const handlePageChange = (page: number, pageSize: number) => {
+  pageInfo.current = page
+  pageInfo.pageSize = pageSize
+  fetchTableList(currentQueryParams.value)
+}
+
+// 查询列表 - 用于手动触发的首次查询
+const searchList = async (queryParams: object) => {
+  currentQueryParams.value = queryParams // 保存最新的查询参数
+  pageInfo.current = 1 // 重置到第一页
+  await fetchTableList(queryParams)
+}
+
+const fetchTableList = async () => {
+  const queryParams = props.queryParams
+
+  try {
+    tableLoading.value = true
+    const res: any = await props.fetchList({ ...queryParams, ...pageInfo })
+    tableDataSource.value = get(res, 'records') || []
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+defineExpose({
+  searchList
+})
 </script>
