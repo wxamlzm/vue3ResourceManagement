@@ -10,6 +10,9 @@ import router from "./router";
 // 引入 ant-design-vue
 import Antd from "ant-design-vue";
 import FormCreate from "@form-create/ant-design-vue";
+// 引入element
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App);
 
@@ -18,5 +21,5 @@ app.use(Antd);
 app.use(FormCreate);
 app.use(createPinia());
 app.use(router);
-
+app.use(ElementPlus)
 app.mount("#app");
