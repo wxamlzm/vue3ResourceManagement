@@ -11,11 +11,14 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@form-create/ant-design-vue": "^3.2.19",
     "ant-design-vue": "^4.2.6",
+    "echarts": "^5.6.0",
     "lodash": "^4.17.21",
     "pinia": "^2.2.6",
     "sass": "^1.81.0",
     "vue": "^3.5.12",
+    "vue-echarts": "^7.0.3",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
