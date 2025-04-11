@@ -1,20 +1,22 @@
-import './assets/main.css'
+import "./assets/main.css";
 // 引入全局样式
-import 'ant-design-vue/dist/reset.css'; 
+import "ant-design-vue/dist/reset.css";
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 
-import App from './App.vue'
-import router from './router'
+import App from "./App.vue";
+import router from "./router";
 // 引入 ant-design-vue
-import Antd from 'ant-design-vue';
+import Antd from "ant-design-vue";
+import FormCreate from "@form-create/ant-design-vue";
 
-const app = createApp(App)
+const app = createApp(App);
 
 // 使用 ant-design-vue
 app.use(Antd);
-app.use(createPinia())
-app.use(router)
+app.use(FormCreate);
+app.use(createPinia());
+app.use(router);
 
-app.mount('#app')
+app.mount("#app");
